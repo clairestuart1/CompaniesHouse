@@ -95,8 +95,15 @@ def getlistofdirectors(companynumber):
         return name, role, appointon, resignedon, dob, country, nationality, occupation 
 
 # Companies House token 
+tokenPath = "C:/Users/clair/Documents/PhD/Data/ - CompaniesHouseAPI/chapitoken.txt"
 
-search_client = chwrapper.Search(access_token='kvOgVLFW60kS3iMuSqx0lI1uC6g71G1hiN6O80Y-') 
+tokenFile = open(tokenPath, "r")
+
+chapiToken = tokenFile.read()
+
+print(chapiToken)
+
+search_client = chwrapper.Search(access_token=chapiToken)
 
 # Read in list of company numbers of matched charities in CSV format     
         
@@ -144,8 +151,6 @@ print("Finished! There is a list of company directors by matched charity waiting
 
 
 ###################################################
-
-##search_client = chwrapper.Search(access_token='kvOgVLFW60kS3iMuSqx0lI1uC6g71G1hiN6O80Y-')
 
 ##response = search_client.officers('00664175')
 
