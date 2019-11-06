@@ -10,7 +10,7 @@ from urllib.error import HTTPError
 
 # Companies House API Key 
 
-tokenPath = "C:/Users/ar34/Dropbox/Academic/Academic-Research-Projects/Project - CompaniesHouseAPI/chapitoken.txt"
+tokenPath = ""C:/Users/clair/Documents/PhD/Data/ - CompaniesHouseAPI/chapitoken.txt"
 
 tokenFile = open(tokenPath, "r")
 
