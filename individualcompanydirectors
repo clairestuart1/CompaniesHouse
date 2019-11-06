@@ -1,0 +1,69 @@
+import chwrapper
+
+import json
+
+import csv
+
+from time import sleep
+
+from urllib.error import HTTPError
+
+# Companies House API Key 
+
+tokenFile = open(tokenPath, "r")
+
+chapiToken = tokenFile.read()
+
+print(chapiToken)
+
+search_client = chwrapper.Search(access_token=chapiToken)
+
+# Make the API request 
+
+response = search_client.officers('00664175')
+
+#print(response.json())
+
+directors = response.json()["items"]
+
+#firstdirector = response.json()["items"][0]
+
+#print()
+
+#print()
+
+#print()
+
+# Extract relevant information, allowing for missing data 
+
+for person in directors:
+
+    print(person["name"])
+
+    print(person["officer_role"])
+
+    try: print(person["appointed_on"])
+
+    except: appointed_on = "."
+        
+    try: print(person["resigned_on"])
+
+    except: resigned_on = "."
+
+    try: print(person["date_of_birth"])
+
+    except: date_of_birth = "."
+
+    try: print(person["country_of_residence"])
+
+    except: country_of_residence = "."
+
+    try: print(person["nationality"])
+
+    except: nationality = "." 
+
+    try: print(person["occupation"])
+
+    except: occupation = "."
+
+  
