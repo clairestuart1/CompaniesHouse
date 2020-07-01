@@ -13,7 +13,7 @@ from urllib.error import HTTPError
 
 def getlistofdirectors(companynumber):
 
-        global name, role, appointon, resignedon, dob, country, nationality, occupation
+        #global name, role, appointon, resignedon, dob, country, nationality, occupation
 
         searchnumber = companynumber[1:]
 
@@ -22,7 +22,7 @@ def getlistofdirectors(companynumber):
         try:    
 
             response = search_client.officers(searchnumber)
- 
+
             directorslist = response.json()["items"]
 
             for person in directorslist:
@@ -95,6 +95,11 @@ def getlistofdirectors(companynumber):
 
             name, role, appointon, resignedon, dob, country, nationality, occupation = "" , "", "", "", "", "", "", ""  
 
+
+        print("DIRECTOR: ", companynumber, '|', role, '|', name)
+        
+        writerOutput.writerow({'companynumber': companynumber, 'name' : name, 'role' : role, 'appointon' : appointon, 'resignedon' : resignedon, 'dob' : dob, 'country' : country, 'nationality' : nationality, 'occupation' : occupation})
+ 
 #        else:
  #           sleep(30)
 
@@ -151,11 +156,59 @@ with open(outputfilepath, 'w', newline='') as outputcsvfile:
 
         # Output the results into a CSV file 
 
-        print("DIRECTOR: ", companynumber, '|', role, '|', name)
+#        print("DIRECTOR: ", companynumber, '|', role, '|', name)
         
-        writerOutput.writerow({'companynumber': companynumber, 'name' : name, 'role' : role, 'appointon' : appointon, 'resignedon' : resignedon, 'dob' : dob, 'country' : country, 'nationality' : nationality, 'occupation' : occupation})
+#        writerOutput.writerow({'companynumber': companynumber, 'name' : name, 'role' : role, 'appointon' : appointon, 'resignedon' : resignedon, 'dob' : dob, 'country' : country, 'nationality' : nationality, 'occupation' : occupation})
  
 print("Finished! There is a list of company directors by matched charity waiting for you.")
 
+
+###################################################
+
+##search_client = chwrapper.Search(access_token='kvOgVLFW60kS3iMuSqx0lI1uC6g71G1hiN6O80Y-')
+
+##response = search_client.officers('00664175')
+
+#print(response.json())
+
+##directors = response.json()["items"]
+
+#firstdirector = response.json()["items"][0]
+
+#print()
+
+#print()
+
+#print()
+
+##for person in directors:
+
+##    print(person["name"])
+
+##    print(person["officer_role"])
+
+##    try: print(person["appointed_on"])
+
+##    except: appointed_on = "."
+        
+##    try: print(person["resigned_on"])
+
+##    except: resigned_on = "."
+
+##    try: print(person["date_of_birth"])
+
+##    except: date_of_birth = "."
+
+##    try: print(person["country_of_residence"])
+
+##    except: country_of_residence = "."
+
+##    try: print(person["nationality"])
+
+##    except: nationality = "." 
+
+##    try: print(person["occupation"])
+
+##   except: occupation = "."
 
   
