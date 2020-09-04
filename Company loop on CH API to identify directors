@@ -1,9 +1,12 @@
 
+
 import chwrapper
 
 import json
 
 import csv
+
+import sys 
 
 from time import sleep
 
@@ -113,13 +116,22 @@ def getlistofdirectors(companynumber):
 
                         occupation = "."
 
-                    print("             DIRECTOR: ", companynumber, '|', role, '|', name)
+                    try: 
+                        
+                        appointments = person["appointment_count"]
+
+                    except: 
+
+                        appointments = "."    
+
+                    #sys.stdout.errors = 'replace'
+                    print("             DIRECTOR: ", companynumber, '|', role)#, '|', name)
             
-                    writerOutput.writerow({'companynumber': companynumber, 'request': 'Success', 'name' : name, 'role' : role, 'appointon' : appointon, 'resignedon' : resignedon, 'dob' : dob, 'country' : country, 'nationality' : nationality, 'occupation' : occupation})
+                    writerOutput.writerow({'companynumber': companynumber, 'request': 'Success', 'name' : name, 'role' : role, 'appointon' : appointon, 'resignedon' : resignedon, 'dob' : dob, 'country' : country, 'nationality' : nationality, 'occupation' : occupation, 'appointments' : appointments})
 
             else:
                 print("error")
-                writerOutput.writerow({'companynumber': companynumber, 'request': 'Fail', 'name' : '.', 'role' : '.', 'appointon' : '.', 'resignedon' : '.', 'dob' : '.', 'country' : '.', 'nationality' : '.', 'occupation' : '.'})
+                writerOutput.writerow({'companynumber': companynumber, 'request': 'Fail', 'name' : '.', 'role' : '.', 'appointon' : '.', 'resignedon' : '.', 'dob' : '.', 'country' : '.', 'nationality' : '.', 'occupation' : '.', 'appointments' : '.'})
 
 
                 #name, role, appointon, resignedon, dob, country, nationality, occupation = "" , "", "", "", "", "", "", ""  
@@ -147,7 +159,7 @@ projectpath = "C:/Users/clair/Documents/PhD/Data/CompaniesHouseAPI/"
  
 inputfilepath = projectpath + "companynumbers2.csv" 
  
-csvfile = open(inputfilepath, encoding="utf8")
+csvfile = open(inputfilepath, encoding="utf-8")
  
 #fieldnames = ("companynumber")
 
@@ -159,9 +171,9 @@ outputfilepath = projectpath + "companydirectors.csv"
 
 print("Ready to go...")
 
-with open(outputfilepath, 'w', newline='') as outputcsvfile:
+with open(outputfilepath, 'w', newline='', encoding='cp1252', errors='replace') as outputcsvfile:
 
-    outputfieldnames = ("companynumber", "request", "name", "role", "appointon", "resignedon", "dob", "country", "nationality", "occupation")
+    outputfieldnames = ("companynumber", "request", "name", "role", "appointon", "resignedon", "dob", "country", "nationality", "occupation", "appointments")
 
     writerOutput = csv.DictWriter( outputcsvfile, outputfieldnames)
  
