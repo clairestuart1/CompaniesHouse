@@ -151,7 +151,15 @@ def getlistofdirectors(companynumber):
 
 # Companies House token 
 
-search_client = chwrapper.Search(access_token='kvOgVLFW60kS3iMuSqx0lI1uC6g71G1hiN6O80Y-') 
+tokenPath = "C:/Users/clair/Documents/PhD/Data/ - CompaniesHouseAPI/chapitoken.txt"
+
+tokenFile = open(tokenPath, "r")
+
+chapiToken = tokenFile.read()
+
+print(chapiToken)
+
+search_client = chwrapper.Search(access_token=chapiToken)
 
 # Read in list of company numbers of matched charities in CSV format     
         
