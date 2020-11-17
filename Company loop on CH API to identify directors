@@ -52,6 +52,14 @@ def getlistofdirectors(companynumber):
 
                 for person in directorslist:
 
+
+                    try:
+                        title = person["title"]
+
+                    except: 
+
+                        title = "."
+
                     try:
                         name = person["name"]
 
@@ -127,11 +135,11 @@ def getlistofdirectors(companynumber):
                     #sys.stdout.errors = 'replace'
                     print("             DIRECTOR: ", companynumber, '|', role)#, '|', name)
             
-                    writerOutput.writerow({'companynumber': companynumber, 'request': 'Success', 'name' : name, 'role' : role, 'appointon' : appointon, 'resignedon' : resignedon, 'dob' : dob, 'country' : country, 'nationality' : nationality, 'occupation' : occupation, 'appointments' : appointments})
+                    writerOutput.writerow({'companynumber': companynumber, 'request': 'Success', 'title' : title, 'name' : name, 'role' : role, 'appointon' : appointon, 'resignedon' : resignedon, 'dob' : dob, 'country' : country, 'nationality' : nationality, 'occupation' : occupation, 'appointments' : appointments})
 
             else:
                 print("error")
-                writerOutput.writerow({'companynumber': companynumber, 'request': 'Fail', 'name' : '.', 'role' : '.', 'appointon' : '.', 'resignedon' : '.', 'dob' : '.', 'country' : '.', 'nationality' : '.', 'occupation' : '.', 'appointments' : '.'})
+                writerOutput.writerow({'companynumber': companynumber, 'request': 'Fail', 'title' : '.', 'name' : '.', 'role' : '.', 'appointon' : '.', 'resignedon' : '.', 'dob' : '.', 'country' : '.', 'nationality' : '.', 'occupation' : '.', 'appointments' : '.'})
 
 
                 #name, role, appointon, resignedon, dob, country, nationality, occupation = "" , "", "", "", "", "", "", ""  
@@ -148,7 +156,7 @@ def getlistofdirectors(companynumber):
     #        print("")
 
         #return name, role, appointon, resignedon, dob, country, nationality, occupation 
-
+        
 # Companies House token 
 
 tokenPath = "C:/Users/clair/Documents/PhD/Data/ - CompaniesHouseAPI/chapitoken.txt"
@@ -181,7 +189,7 @@ print("Ready to go...")
 
 with open(outputfilepath, 'w', newline='', encoding='cp1252', errors='replace') as outputcsvfile:
 
-    outputfieldnames = ("companynumber", "request", "name", "role", "appointon", "resignedon", "dob", "country", "nationality", "occupation", "appointments")
+    outputfieldnames = ("companynumber", "request", "title", "name", "role", "appointon", "resignedon", "dob", "country", "nationality", "occupation", "appointments")
 
     writerOutput = csv.DictWriter( outputcsvfile, outputfieldnames)
  
