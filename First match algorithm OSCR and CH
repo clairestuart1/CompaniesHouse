@@ -181,17 +181,16 @@ def cleanuporgname(orgname):
   
 # ==================================================================================
  
-# MAIN PROGRAM
-
 # Companies House token
-
-tokenPath = ""C:/Users/clair/Documents/PhD/Data/ - CompaniesHouseAPI/chapitoken.txt"
+tokenPath = "C:/Users/clair/Documents/PhD/Data/ - CompaniesHouseAPI/chapitoken.txt"
 
 tokenFile = open(tokenPath, "r")
 
 chapiToken = tokenFile.read()
 
 print(chapiToken)
+
+search_client = chwrapper.Search(access_token=chapiToken)
 
 # Read in list of charity names and postcodes in CSV format
  
