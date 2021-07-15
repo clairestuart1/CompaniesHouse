@@ -1,5 +1,6 @@
-import chwrapper
 
+import chwrapper
+ 
 import json
 
 import csv
@@ -9,1239 +10,307 @@ import re
 from fuzzywuzzy import fuzz
 
 from fuzzywuzzy import process
-
+ 
 from time import sleep
 
 from urllib.error import HTTPError
-
 
 # --------------------------------------------------------------------------
 
 def getlistofcompanies(orgname, orgnumber, postcode):
 
-
 	# Remove punctuation from organisation name
-
-
-
-
-
-
-
+	
 		searchorg = cleanuporgname(orgname)
-
-
-
-
-
-
 
 		searchnumber = orgnumber
 
-
-
-
-
-
-
 		searchpostcode = postcode
-
-
-
-
-
-
-
+ 
 	# Make the Companies House request 	
-
-
-
 		response = search_client.search_companies(searchorg)
-
-
-
 		sleep(0.1)
-
-
-
-
-
-
-
+ 
 		companylist = response.json()["items"]
 
-
-
-
-
-
-
 		if response.status_code == 200: 
-
-
-
 			try:
-
-
-
 				return companylist
-
-
-
 			except HTTPError:	
-
-
-
 				print("HTTP error ... sleeping")
-
-
-
 				sleep(30)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-		#if response.status_code == 200:
-
-
-
-		#	return companylist
-
-
-
-		#except: response.status_code == 502:
-
-
-
-		#sleep(30)
-
-
-
-		#print ("Trying again")
-
-
-
-
-
-
-
-
-
-
-
-	#code 200 do something - when everything is ok 
-
-
-
-	#try: make request if fails then sleep and try. Second try fails then stop. Only return under specific criteria. Return empty list 
-
-
-
-
-
-
-
-	#requestnum +=1
-
-
-
-
-
-
-
-	#if requestnum>=100:
-
-
-
-
-
-
-
-		#sleep(30)
-
-
-
-
-
-
-
-		#requestnum = 0
-
-
-
-
-
-
-
 # --------------------------------------------------------------------------
-
-
-
-
-
-
-
+ 
 def pickbestmatch(companylist, orgname, searchnumber, searchpostcode):
-
-
-
-
-
-
-
+ 
 	# Pick the best match
-
-
-
-
-
-
 
 	matchname = ""
 
-
-
-
-
-
-
 	matchnumber = ""
-
-
-
-
-
-
 
 	searchorg = cleanuporgname(orgname)
 
-
-
-
-
-
-
 	matchreturn = []
 
-
-
-
-
-
-
 	matchresults = []
-
-
-
 	matchranked = []
-
-
-
-
-
-
 
 	global numretmatches
 
-
-
-
-
-
-
 	# Iterate through all the companies returned by the search
-
-
-
-
-
-
 
 	for company in companylist:
 
-
-
-
-
-
-
 		# Initialise a dictionary as a record to store each search result
-
-
-
 		matchrecord = {}
-
-
-
-
-
-
 
 		# Extract the company name
 
-
-
-
-
-
-
 		checkorg = cleanuporgname(company["title"])
-
-
-
-
-
-
 
 		# Extract postcode if there is one
 
-
-
-
-
-
-
 		try:
-
-
-
-
-
-
 
 			checkpostcode = company["address"]["postal_code"]
 
-
-
-
-
-
-
 		except:
-
-
-
-
-
-
 
 			checkpostcode = ""
 
-
-
-
-
-
-
 		# Fuzzy Matching
-
-
-
-
-
-
 
 		# https://chairnerd.seatgeek.com/fuzzywuzzy-fuzzy-string-matching-in-python/	
 
-
-
-
-
-
-
 		# Compare the charity name and the company names
-
-
-
-
-
-
 
 		namescore = fuzz.token_set_ratio(searchorg, checkorg)
 
-
-
-
-
-
-
 		# If the postcode data is missing in either record, then just use the namescore to evaluate
-
-
-
-
-
-
 
 		if searchpostcode =="" or checkpostcode=="":
 
-
-
-
-
-
-
 			postcodescore = 0
-
-
-
-
-
-
 
 			score = namescore	
 
-
-
-
-
-
-
 		else:
-
-
-
-
-
-
 
 			# Otherwise, compare the postcodes
 
-
-
-
-
-
-
 			postcodescore = fuzz.token_set_ratio(searchpostcode, checkpostcode)
-
-
-
-
-
-
-
+ 
 			# If the name was a perfect match, then just use the namescore
-
-
-
-
-
-
-
+ 
 			if namescore == 100:
-
-
-
-
-
-
-
+ 
 				postcodeweight = 0.25
-
-
-
-
-
-
-
+ 
 				score = (namescore * (1 - postcodeweight)) + (postcodescore * postcodeweight)
-
-
-
-
-
-
-
+ 
 				score = round((namescore * (1 - postcodeweight)) + (postcodescore * postcodeweight),2)
-
-
-
-
-
-
-
+ 
 			# If the name is not a perfect match, then equally weight the namescore and postcode score	
-
-
-
-
-
-
-
+ 
 			else:
-
-
-
-
-
-
-
+ 
 				postcodeweight = 0.5
-
-
-
-
-
-
-
+ 
 				score = (namescore * (1 - postcodeweight)) + (postcodescore * postcodeweight)
-
-
-
-
-
-
-
+ 
 				score = round((namescore * (1 - postcodeweight)) + (postcodescore * postcodeweight),2)
-
-
-
-
-
-
-
-
-
 
 
 		#Store the match scores in a record for each search result 
-
-
-
 		matchrecord["matchscore"] = score
-
-
-
 		matchrecord["namescore"] = namescore
-
-
-
 		matchrecord["postcodescore"] = postcodescore
-
-
-
 		matchrecord["lengthscore"] = round(100 * len(searchorg) / len(matchname)) if len(matchname) > 0 else len(searchorg)
-
-
-
 		matchrecord["companyname"] = checkorg
-
-
-
 		matchrecord["companynumber"] = "'" + company["company_number"]
 
-
-
-
-
-
-
 		# Append this record to the match results
-
-
-
 		matchresults.append(matchrecord)
 
-
-
-
-
-
-
 	# Trim this list to keep just the top X matches
-
-
-
 	matchreturn = matchresults[:numretmatches]
 
-
-
-
-
-
-
 	# Record the rank of the matches, and also rename their keys
-
-
-
 	# to reflect their rank
-
-
-
 	rank = 1
-
-
-
 	for result in matchreturn:
-
-
-
 		rankedresult = {}
-
-
-
 		for k, v in result.items():
-
-
-
 			# Add the rank on to the key name, as this will be the variable name
-
-
-
 			# in the output file
-
-
-
 			rankedresult[k + str(rank)] = v
-
-
-
 		#rankedresult["rank"]=rank
-
-
-
 		rank+=1
-
-
-
 		matchranked.append(rankedresult)
-
-
-
-
-
-
 
 	return matchranked
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+ 
 # --------------------------------------------------------------------------
-
-
-
-
-
-
-
+ 
 def cleanuporgname(orgname):
-
-
-
-
-
-
-
+ 
 	#orgname = 'one, limited two LTD Ltd & three ltd Limited'
 
-
-
-
-
-
-
 	# Removed Limited or Ltd from an organisation's name
-
-
-
-
-
-
-
+ 
 	cleanorg = re.sub(' ((L|l)(imited|IMITED)|(L|l)(td|TD))',' ', orgname)
-
-
-
-
-
-
-
+ 
 	# Remove any punctuation from an organisation's name
-
-
-
-
-
-
-
+ 
 	# https://stackoverflow.com/questions/5843518/remove-all-special-characters-punctuation-and-spaces-from-string
-
-
-
-
-
-
-
+ 
 	cleanorg = re.sub('\W+',' ', cleanorg)
 
-
-
-
-
-
-
 	#print(cleanorg)
-
-
-
-
-
-
-
+ 
 	return(cleanorg)
-
-
-
-
-
-
-
+  
 # ==================================================================================
-
-
-
-
-
-
-
+ 
 # MAIN PROGRAM
-
-
-
-
-
-
 
 # Companies House token
 
 tokenPath = ""C:/Users/clair/Documents/PhD/Data/ - CompaniesHouseAPI/chapitoken.txt"
 
-
-
 tokenFile = open(tokenPath, "r")
 
-
-
 chapiToken = tokenFile.read()
-
-
 
 print(chapiToken)
 
 # Read in list of charity names and postcodes in CSV format
-
-
-
-
-projectpath = "C:/Users/clair/Documents/PhD/Data/CompaniesHouseAPI/"
-
-
-
-
-
-
-charityfilepath = projectpath + "charitiesformatchingcompaniesandscios.csv" #charitiesformatching.csv" 
-
-
-
-
-
-
-
-csvfile = open(charityfilepath, encoding="utf8")
-
-
-
-
-
-
-
+ 
+projectpath = "C:/Users/clair/Documents/PhD/Data/CompaniesHouseAPI/"  
+ 
+charityfilepath = projectpath + "companiesformatching.csv" 
+ 
+csvfile = open(charityfilepath, 'r')
+ 
 fieldnames = ("charitynumber", "charityname", "registerdate", "knownas", "postcode", "form")
-
-
-
-
-
-
 
 reader = csv.DictReader( csvfile, fieldnames)
 
-
-
-
-
-
-
 numretmatches = 5
-
-
-
-
-
-
 
 # For each charity, get Companies House matches
 
-
-
-
-
-
-
 # The matching strategy is:
 
-
-
-
-
-
-
 #		A name match of 100 is accepted as a match
-
-
-
-
-
-
-
+ 
 #		Otherwise:
-
-
-
-
-
-
 
 #			If name and postcode are available, match on both with a given weight
 
-
-
-
-
-
-
 #			If only name is available, match on that
 
-
-
-
-
-
-
 # Matching threshold of 80 out of 100
-
-
-
-
-
-
-
+ 
 threshold = 75
-
-
-
-
-
-
-
+ 
 # Initialise counters for match rate
-
-
-
-
-
-
-
+ 
 count_orgs = 0
-
-
-
-
-
-
-
+ 
 matched_orgs = 0
-
-
-
-
-
-
-
+ 
 unmatched_orgs = 0
 
-
-
-
-
-
-
 # Output file
+ 
+matchfilepath = projectpath + "matchedcompanies.csv"
 
-
-
-
-
-
-
-matchfilepath = projectpath + "matchedcharities1.csv"
-
-
-
-
-
-
-
-nomatchfilepath = projectpath + "nonmatchedcharities1.csv"
-
-
-
-
-
-
+nomatchfilepath = projectpath + "nonmatchedcompanies.csv"
 
 print("Ready to go ...")
-
-
-
-
-
-
-
+ 
 with open(matchfilepath, 'w', newline='') as matchcsvfile:
-
-
-
-
-
-
-
+ 
 	with open(nomatchfilepath, 'w', newline='') as nomatchcsvfile:
-
-
-
-
-
-
-
+ 
 		# Prepare all the output files
-
-
-
-
-
-
-
+ 
 		outputfieldnames = ["match", "charityname", "charitynumber"]
-
-
-
 		for ii in range(1, numretmatches + 1):
-
-
-
 			outputfieldnames.extend(["matchscore" + str(ii), "namescore" + str(ii), "postcodescore" + str(ii), "lengthscore" + str(ii),"companyname" + str(ii), "companynumber" + str(ii)])
-
-
-
-
-
-
-
+ 
 		writerMatch = csv.DictWriter( matchcsvfile, outputfieldnames)
-
-
-
-
-
-
-
+ 
 		writerMatch.writeheader()
-
-
-
-
-
-
-
+ 
 		writerNomatch = csv.DictWriter( nomatchcsvfile, outputfieldnames)
-
-
-
-
-
-
 
 		writerNomatch.writeheader()
 
-
-
-
-
-
-
 		# Work through each charity in the input file
 
-
-
-
-
-
-
 		for row in reader:
-
-
-
-
-
-
-
+ 
 			orgname = row['charityname']
 
-
-
-
-
-
-
 			orgnumber = row['charitynumber']
-
-
-
-
-
-
-
+ 
 			postcode = row['postcode']
-
-
-
-
-
-
-
+ 
 			# Search Companies House by company name
-
-
-
-
-
-
-
+ 
 			companylist = getlistofcompanies(orgname, orgnumber, postcode)
-
-
-
-
-
-
-
+ 
 			# From the search results, pick the best one
-
-
-
-
-
-
 
 			matchlist = pickbestmatch(companylist, orgname, orgnumber, postcode)
 
-
-
-
-
-
-
 			recordout={'charityname': orgname, 'charitynumber': orgnumber}
-
-
-
 			for d in matchlist:
-
-
-
 				recordout.update(d)
-
-
-
 			#print(matchlist)
-
-
-
-
-
-
-
+ 
 			# Once we have checked all the returned items
-
-
-
-
-
-
-
+ 
 			# Check if that match was good enough and 
-
-
-
-
-
-
-
+ 
 			# Output the results into a CSV file
-
-
-
 			if matchlist[0]['matchscore1'] >= threshold:
-
-
-
-
-
-
-
+ 
 				# We got a match!  :D
-
-
-
-
-
-
-
+ 
 				print("---------------------------------------------------------")
-
-
-
 				print("MATCH: ", orgname, '|', matchlist[0]['matchscore1'], '|', matchlist[0]['companyname1']) #, matchname, '|', hiscore)
-
-
-
 				recordout['match']='MATCH'
-
-
-
 				writerMatch.writerow(recordout)
-
-
-
-
-
-
-
+ 
 				matched_orgs+=1
-
-
-
-
-
-
-
+ 
 			else:
-
-
-
-
-
-
-
+ 
 				# We didn't get a match :(
-
-
-
 				st = orgname + '|' + str(matchlist[0]['matchscore1']) + '|' + matchlist[0]['companyname1'] + '|' + ":NO MATCH"
-
-
-
 				print("---------------------------------------------------------".rjust(115))				
-
-
-
 				print(st.rjust(115)) #, hiscore, hinamescore, hipostcodescore)
-
-
-
 				recordout['match']='NO MATCH'
-
-
-
 				writerNomatch.writerow(recordout)
-
-
-
-
-
-
 
 				unmatched_orgs +=1
 
 
-
-
-
-
-
-
-
-
-
 			# Increment the counter	
-
-
-
 			count_orgs+=1
 
-
-
-
-
-
-
 # We're done - report on the overall match rate
-
-
-
-
-
-
-
-print('Evaluated', count_orgs, 'charities, with', matched_orgs, 'matched and', unmatched_orgs, 'organisations unmatched.')
-
-
-
-
-
-
+ 
+print('Evaluated', count_orgs, 'charities, with', matched_orgs, 'matched and', unmatched_orgs, 'companies unmatched.')
 
 print('That is a match rate of', round(100 * matched_orgs/count_orgs),'%.')	
-
-
-
-
-
-
 
 print('Finished.')
