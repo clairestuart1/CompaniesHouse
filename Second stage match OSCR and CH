@@ -189,6 +189,8 @@ chapiToken = tokenFile.read()
 
 print(chapiToken)
 
+search_client = chwrapper.Search(access_token=chapiToken)
+
 # Read in list of charity names and postcodes in CSV format
  
 projectpath = "C:/Users/clair/Documents/PhD/Data/CompaniesHouseAPI/"  
