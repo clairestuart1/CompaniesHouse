@@ -1,14 +1,168 @@
+
+
 import chwrapper
 
 import json
 
 import csv
 
+import sys 
+
 from time import sleep
 
 from urllib.error import HTTPError
 
-# Companies House API Key 
+###############################################
+
+def getlistofdirectors(companynumber):
+
+        #global name, role, appointon, resignedon, dob, country, nationality, occupation
+
+        searchnumber = companynumber[1:]
+
+        print('| ---------------------)')    
+        print('| Company number:', searchnumber) 
+        
+    # Make the Companies House request  
+        numItems = 1
+        pIndex = 0
+
+        while pIndex < numItems: 
+            print("Checking index", pIndex)
+           # requestCount +=1
+
+            try:    
+
+                response = search_client.officers(searchnumber, start_index=pIndex)
+                
+                print(response.status_code) 
+                if response.status_code == 200:
+                    validresponse = True
+                    numItems = response.json()['total_results']
+                    print('Total:', numItems)
+            except: 
+                print('Request error')
+                validresponse = False
+
+            if validresponse:
+
+                directorslist = response.json()["items"]
+                print(len(directorslist))
+
+
+                for person in directorslist:
+
+                    try: 
+                        officerid = person["links"]
+
+                    except: 
+                        officerid = "."
+
+                    try:
+                        title = person["title"]
+
+                    except: 
+
+                        title = "."
+
+                    try:
+                        name = person["name"]
+
+                    except: 
+
+                        name = "."
+
+                    try: 
+
+                        role = person["officer_role"]
+
+                    except: 
+
+                        role = "."
+
+                    try: 
+
+                        appointon = person["appointed_on"]
+
+                    except: 
+
+                        appointon = "."
+            
+                    try: 
+
+                        resignedon = person["resigned_on"]
+
+                    except: 
+
+                        resignedon = "."
+
+                    try: 
+                        month_ob = person["date_of_birth"]["month"]
+                        year_ob = person["date_of_birth"]["year"]
+                        dob = '01/' + str(month_ob) + '/' + str(year_ob)
+
+                    except: 
+
+                        dob = "."
+
+                    try: 
+
+                        country = person["country_of_residence"]
+
+                    except: 
+
+                        country = "."
+
+                    try: 
+
+                        nationality = person["nationality"]
+
+                    except: 
+
+                        nationality = "." 
+
+                    try: 
+
+                        occupation = person["occupation"]
+
+                    except: 
+
+                        occupation = "."
+
+                    try: 
+                        
+                        appointments = person["appointment_count"]
+
+                    except: 
+
+                        appointments = "."    
+
+                    #sys.stdout.errors = 'replace'
+                    print("             DIRECTOR: ", companynumber, '|', role)#, '|', name)
+            
+                    writerOutput.writerow({'companynumber': companynumber, 'request': 'Success', 'officerid' : officerid, 'title' : title, 'name' : name, 'role' : role, 'appointon' : appointon, 'resignedon' : resignedon, 'dob' : dob, 'country' : country, 'nationality' : nationality, 'occupation' : occupation, 'appointments' : appointments})
+
+            else:
+                print("error")
+                writerOutput.writerow({'companynumber': companynumber, 'request': 'Fail', 'officerid': '.', 'title' : '.', 'name' : '.', 'role' : '.', 'appointon' : '.', 'resignedon' : '.', 'dob' : '.', 'country' : '.', 'nationality' : '.', 'occupation' : '.', 'appointments' : '.'})
+
+
+                #name, role, appointon, resignedon, dob, country, nationality, occupation = "" , "", "", "", "", "", "", ""  
+
+            pIndex +=35  
+         
+#        else:
+ #           sleep(30)
+
+  #          print (".", end='')
+
+   #         name, role, appointon, resignedon, dob, country, nationality, occupation = getlistofdirectors(companynumber)    
+
+    #        print("")
+
+        #return name, role, appointon, resignedon, dob, country, nationality, occupation 
+
+# Companies House token
 
 tokenPath = ""C:/Users/clair/Documents/PhD/Data/ - CompaniesHouseAPI/chapitoken.txt"
 
@@ -20,52 +174,48 @@ print(chapiToken)
 
 search_client = chwrapper.Search(access_token=chapiToken)
 
-# Make the API request 
-
-response = search_client.officers('00664175')
-
-#print(response.json())
-
-directors = response.json()["items"]
-
-#firstdirector = response.json()["items"][0]
-
-#print()
-
-#print()
-
-#print()
-
-# Extract relevant information, allowing for missing data 
-
-for person in directors:
-
-    print(person["name"])
-
-    print(person["officer_role"])
-
-    try: print(person["appointed_on"])
-
-    except: appointed_on = "."
+# Read in list of company numbers of matched charities in CSV format     
         
-    try: print(person["resigned_on"])
+projectpath = "C:/Users/clair/Documents/PhD/Data/CompaniesHouseAPI/"  
+ 
+inputfilepath = projectpath + "matchedcompanies.csv" 
+ 
+csvfile = open(inputfilepath, encoding="utf-8")
+ 
+#fieldnames = ("companynumber")
 
-    except: resigned_on = "."
+reader = csv.DictReader( csvfile)
 
-    try: print(person["date_of_birth"])
+# Open an output file 
 
-    except: date_of_birth = "."
+outputfilepath = projectpath + "companydirectorstest.csv"
 
-    try: print(person["country_of_residence"])
+print("Ready to go...")
 
-    except: country_of_residence = "."
+with open(outputfilepath, 'w', newline='', encoding='cp1252', errors='replace') as outputcsvfile:
 
-    try: print(person["nationality"])
+    outputfieldnames = ("companynumber", "request", "officerid", "title", "name", "role", "appointon", "resignedon", "dob", "country", "nationality", "occupation", "appointments")
 
-    except: nationality = "." 
+    writerOutput = csv.DictWriter( outputcsvfile, outputfieldnames)
+ 
+    writerOutput.writeheader()
 
-    try: print(person["occupation"])
+    # Work through each company in the input file 
 
-    except: occupation = "."
+    for row in reader:
+ 
+        companynumber = row['companynumber1']
 
-  
+        # Search Companies House by company number
+
+        getlistofdirectors(companynumber)
+
+        # Output the results into a CSV file 
+
+#        print("DIRECTOR: ", companynumber, '|', role, '|', name)
+        
+#        writerOutput.writerow({'companynumber': companynumber, 'name' : name, 'role' : role, 'appointon' : appointon, 'resignedon' : resignedon, 'dob' : dob, 'country' : country, 'nationality' : nationality, 'occupation' : occupation})
+ 
+print("Finished! There is a list of company directors by matched charity waiting for you.")
+
+
