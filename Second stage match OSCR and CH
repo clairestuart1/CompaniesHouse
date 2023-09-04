@@ -169,7 +169,7 @@ def cleanuporgname(orgname):
  
 	# https://stackoverflow.com/questions/5843518/remove-all-special-characters-punctuation-and-spaces-from-string
  
-	cleanorg = re.sub('\W+',' ', cleanorg)
+	cleanorg = re.sub('/W+',' ', cleanorg)
 
 	#print(cleanorg)
  
@@ -180,16 +180,17 @@ def cleanuporgname(orgname):
 # MAIN PROGRAM
 
 # Companies House token
+search_client = chwrapper.Search(access_token='xxxxxxxxxxxxxx')
 
-tokenPath = ""C:/Users/clair/Documents/PhD/Data/ - CompaniesHouseAPI/chapitoken.txt"
+#tokenPath = "C:/Users/clair/Documents/PhD/Data/ - CompaniesHouseAPI/chapitoken.txt"
 
-tokenFile = open(tokenPath, "r")
+#tokenFile = open(tokenPath, "r")
 
-chapiToken = tokenFile.read()
+#chapiToken = tokenFile.read()
 
-print(chapiToken)
+#print(chapiToken)
 
-search_client = chwrapper.Search(access_token=chapiToken)
+#search_client = chwrapper.Search(access_token=chapiToken)
 
 # Read in list of charity names and postcodes in CSV format
  
