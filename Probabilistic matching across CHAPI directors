@@ -1,0 +1,64 @@
+#importing packages 
+import pandas as pd
+import numpy as np
+import fuzzywuzzy 
+from fuzzywuzzy import process, fuzz
+import openpyxl
+import csv
+
+#loading the excel file
+df = pd.read_excel('C:/Users/clair/OneDrive - University of Stirling/Documents/PhD/DATA ORGANISATION/Raw data files/CHAPIcompanydirectorappointments.xlsx')
+print(df.head(5))
+
+#check and have a look at the data structure 
+df.info()
+
+#remove spaces before or after each string 
+for col in df[['name','gender','dob','nationality','occupation']]:
+    df[col] = df[col].str.strip()
+    print('Number of unique values in ' + str(col) +': ' + str(df[col].nunique()))
+    
+#get a list of all the unique names 
+    unique_name = df['name'].unique().tolist()
+
+outputfilepath = "C:/Users/clair/OneDrive - University of Stirling/Documents/PhD/DATA ORGANISATION/Raw data files" + "directorduplicates.csv"
+
+print("Starting...")
+
+#with open(outputfilepath, 'w', newline='') as outputcsvfile:
+
+#    outputfieldnames = ["match", "name", "dob"]
+#    for ii in range:
+#        outputfieldnames.extend(["score" + str(ii), "name" + str(ii), "dob" + str(ii)])
+
+#    writerMatch = csv.DictWriter( outputcsvfile, outputfieldnames)
+
+#    writerMatch.writeheader()
+    
+#token_set tokenizes the strings, returns them to lower case, removes punctuation, sorts them alphabetically, finds the Levenshtein distances, (this is where 'token_sort' stops and why it wasn't chosen) collects common tokens between two strings and performs pairwise calcs to return similarity %
+#create tuples of names, matched names, and the score
+score_set = [(x,) + i
+         for x in unique_name 
+         for i in process.extract(x, unique_name, scorer=fuzz.token_set_ratio)]
+
+#create dataframe from the tuples
+similarity_set = pd.DataFrame(score_set, columns=['name_set','match_set','score_set'])
+
+#derive representative values to enable exclusion of reversed order pairs 
+similarity_set['sorted_name_set'] = np.minimum(similarity_set['name_set'], similarity_set['match_set'])
+
+#set threshold for match, exclude those which match to themselves and the reversed order pairs
+high_score_set = similarity_set[(similarity_set['score_set'] >= 80) &
+                (similarity_set['name_set'] !=  similarity_set['match_set']) &
+                (similarity_set['sorted_name_set'] != similarity_set['match_set'])]
+
+#drop the representative values column as its function is complete 
+#high_score_set = high_score_set.drop('sorted_name_set',axis=1).copy()
+
+#group the resulting matches by names and their similarity scores
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_colwidth', None)
+high_score_set.groupby(['match_set','score_set']).agg({'name_set': ', '.join}).sort_values(['score_set'], ascending=False)                            
+                           
+
+print("Done!")
